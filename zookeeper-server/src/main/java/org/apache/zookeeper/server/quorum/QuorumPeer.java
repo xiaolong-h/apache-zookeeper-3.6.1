@@ -1072,7 +1072,9 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         if (!getView().containsKey(myid)) {
             throw new RuntimeException("My id " + myid + " not in the peer list");
         }
+        //加载数据
         loadDataBase();
+        //启动2181的服务监听
         startServerCnxnFactory();
         try {
             adminServer.start();
@@ -1080,9 +1082,9 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             LOG.warn("Problem starting AdminServer", e);
             System.out.println(e);
         }
-        startLeaderElection();
+        startLeaderElection();  //开始选举
         startJvmPauseMonitor();
-        super.start();
+        super.start(); // 启动 --> 开始执行 run()
     }
 
     private void loadDataBase() {
@@ -1155,6 +1157,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
             throw re;
         }
 
+        //创建选举算法，3.6.1中只有一种
         this.electionAlg = createElectionAlgorithm(electionType);
     }
 
@@ -1275,17 +1278,20 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
         case 2:
             throw new UnsupportedOperationException("Election Algorithm 2 is not supported.");
         case 3:
+            //QuorumCnxManager 集群选举、投票有关的类
             QuorumCnxManager qcm = createCnxnManager();
             QuorumCnxManager oldQcm = qcmRef.getAndSet(qcm);
-            if (oldQcm != null) {
+            if (oldQcm != null) {       //判断是否开启了选举
                 LOG.warn("Clobbering already-set QuorumCnxManager (restarting leader election?)");
-                oldQcm.halt();
+                oldQcm.halt();      //已开启的话，终止掉
             }
+            //监听集群中的票据
             QuorumCnxManager.Listener listener = qcm.listener;
             if (listener != null) {
                 listener.start();
+                //创建快速选举
                 FastLeaderElection fle = new FastLeaderElection(this, qcm);
-                fle.start();
+                fle.start();    //启动
                 le = fle;
             } else {
                 LOG.error("Null listener when initializing cnx manager");
@@ -1371,6 +1377,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
                     LOG.info("LOOKING");
                     ServerMetrics.getMetrics().LOOKING_COUNT.add(1);
 
+                    //如果当前节点是只读的走这里
                     if (Boolean.getBoolean("readonlymode.enabled")) {
                         LOG.info("Attempting to start ReadOnlyZooKeeperServer");
 
@@ -1422,6 +1429,8 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
                                 shuttingDownLE = false;
                                 startLeaderElection();
                             }
+                            //makeLEStrategy().lookForLeader() 得到一个vote
+                            //currentVote重新赋值，说明得到的vote就是当前一轮选举的结果
                             setCurrentVote(makeLEStrategy().lookForLeader());
                         } catch (Exception e) {
                             LOG.warn("Unexpected exception", e);
@@ -2010,7 +2019,7 @@ public class QuorumPeer extends ZooKeeperThread implements QuorumStats.Provider 
 
     private void startServerCnxnFactory() {
         if (cnxnFactory != null) {
-            cnxnFactory.start();
+            cnxnFactory.start();    //开始启动服务端线程
         }
         if (secureCnxnFactory != null) {
             secureCnxnFactory.start();

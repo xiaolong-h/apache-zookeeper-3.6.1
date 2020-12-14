@@ -546,6 +546,10 @@ public class FastLeaderElection implements Election {
          * Starts instances of WorkerSender and WorkerReceiver
          */
         void start() {
+            /**
+             * WorkerSender   --> 发送票据
+             * WorkerReceiver --> 接受票据
+             */
             this.wsThread.start();
             this.wrThread.start();
         }
@@ -937,7 +941,9 @@ public class FastLeaderElection implements Election {
             int notTimeout = minNotificationInterval;
 
             synchronized (this) {
+                //逻辑时钟新增 epoch
                 logicalclock.incrementAndGet();
+                //更新提议
                 updateProposal(getInitId(), getInitLastLoggedZxid(), getPeerEpoch());
             }
 
@@ -945,7 +951,7 @@ public class FastLeaderElection implements Election {
                 "New election. My id = {}, proposed zxid=0x{}",
                 self.getId(),
                 Long.toHexString(proposedZxid));
-            sendNotifications();
+            sendNotifications();    //往发送队列添加消息
 
             SyncedLearnerTracker voteSet;
 
@@ -958,6 +964,7 @@ public class FastLeaderElection implements Election {
                  * Remove next notification from queue, times out after 2 times
                  * the termination time
                  */
+                //从接受队列获取一个 消息
                 Notification n = recvqueue.poll(notTimeout, TimeUnit.MILLISECONDS);
 
                 /*
@@ -993,6 +1000,7 @@ public class FastLeaderElection implements Election {
                             break;
                         }
                         // If notification > current, replace and send messages out
+                        //开始比较 收到的vote的epoch 与 当前的epoch
                         if (n.electionEpoch > logicalclock.get()) {
                             logicalclock.set(n.electionEpoch);
                             recvset.clear();

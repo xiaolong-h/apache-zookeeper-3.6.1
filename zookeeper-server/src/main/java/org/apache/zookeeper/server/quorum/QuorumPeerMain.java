@@ -167,6 +167,7 @@ public class QuorumPeerMain {
             if (config.getClientPortAddress() != null) {
                 //初始化cnxnFactory，默认是 NIOServerCnxnFactory
                 cnxnFactory = ServerCnxnFactory.createFactory();
+                // 绑定2181 端口，当cnxnFactory.start()时，开始监听
                 cnxnFactory.configure(config.getClientPortAddress(), config.getMaxClientCnxns(), config.getClientPortListenBacklog(), false);
             }
 

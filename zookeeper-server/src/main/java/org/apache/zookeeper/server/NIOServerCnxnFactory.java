@@ -672,15 +672,19 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         }
 
         listenBacklog = backlog;
-        this.ss = ServerSocketChannel.open();
+        this.ss = ServerSocketChannel.open();   //NIO开启服务通道
         ss.socket().setReuseAddress(true);
         LOG.info("binding to port {}", addr);
         if (listenBacklog == -1) {
-            ss.socket().bind(addr);
+            ss.socket().bind(addr);     //绑定端口
         } else {
             ss.socket().bind(addr, listenBacklog);
         }
-        ss.configureBlocking(false);
+        ss.configureBlocking(false);    //设置非阻塞
+        /**
+         * selectorThreads 用来处理业务请求
+         * acceptThread 用来处理客户端的链接
+         */
         acceptThread = new AcceptThread(ss, addr, selectorThreads);
     }
 
@@ -741,12 +745,12 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
         }
         for (SelectorThread thread : selectorThreads) {
             if (thread.getState() == Thread.State.NEW) {
-                thread.start();
+                thread.start();     //开启selector轮训的线程，处理业务请求   -> 会执行SelectorThread.run()
             }
         }
         // ensure thread is started once and only once
         if (acceptThread.getState() == Thread.State.NEW) {
-            acceptThread.start();
+            acceptThread.start();   //开启处理客户端链接的线程，处理链接  -> 执行AcceptThread.run()
         }
         if (expirerThread.getState() == Thread.State.NEW) {
             expirerThread.start();
