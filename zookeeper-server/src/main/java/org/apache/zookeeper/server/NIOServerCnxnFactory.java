@@ -227,6 +227,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
                         continue;
                     }
                     if (key.isAcceptable()) {
+                        //开始接受
                         if (!doAccept()) {
                             // If unable to pull a new connection off the accept
                             // queue, pause accepting to give us time to free
@@ -379,7 +380,9 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
             try {
                 while (!stopped) {
                     try {
+
                         select();
+                        //为接受线程创建NIOServerCnxn
                         processAcceptedConnections();
                         processInterestOpsUpdateRequests();
                     } catch (RuntimeException e) {

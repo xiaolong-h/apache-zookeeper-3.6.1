@@ -1076,6 +1076,7 @@ public class QuorumCnxManager {
                                 if (quorumSaslAuthEnabled) {
                                     receiveConnectionAsync(client);
                                 } else {
+                                    //处理
                                     receiveConnection(client);
                                 }
                                 numRetries = 0;
@@ -1267,6 +1268,7 @@ public class QuorumCnxManager {
                     try {
                         BlockingQueue<ByteBuffer> bq = queueSendMap.get(sid);
                         if (bq != null) {
+                            //从队列queueSendMap中取出数据
                             b = pollSendQueue(bq, 1000, TimeUnit.MILLISECONDS);
                         } else {
                             LOG.error("No queue of incoming messages for server {}", sid);
@@ -1275,6 +1277,7 @@ public class QuorumCnxManager {
 
                         if (b != null) {
                             lastMessageSent.put(sid, b);
+                            //发送
                             send(b);
                         }
                     } catch (InterruptedException e) {

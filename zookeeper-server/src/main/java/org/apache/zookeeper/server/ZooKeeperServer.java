@@ -1110,6 +1110,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
             boolean validpacket = Request.isValid(si.type);
             if (validpacket) {
                 setLocalSessionFlag(si);
+                //firstProcessor --> PrepRequestProcessor(SyncRequestProcessor(FinalRequestProcessor()))
                 firstProcessor.processRequest(si);
                 if (si.cnxn != null) {
                     incInProcess();

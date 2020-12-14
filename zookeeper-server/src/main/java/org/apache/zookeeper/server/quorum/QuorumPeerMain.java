@@ -133,10 +133,12 @@ public class QuorumPeerMain {
         purgeMgr.start();
 
         if (args.length == 1 && config.isDistributed()) {
+            //集群启动
             runFromConfig(config);
         } else {
             LOG.warn("Either no config or no quorum defined in config, running in standalone mode");
             // there is only server in the quorum -- run as standalone
+            //单机启动
             ZooKeeperServerMain.main(args);
         }
     }
@@ -163,11 +165,13 @@ public class QuorumPeerMain {
             ServerCnxnFactory secureCnxnFactory = null;
 
             if (config.getClientPortAddress() != null) {
+                //初始化cnxnFactory，默认是 NIOServerCnxnFactory
                 cnxnFactory = ServerCnxnFactory.createFactory();
                 cnxnFactory.configure(config.getClientPortAddress(), config.getMaxClientCnxns(), config.getClientPortListenBacklog(), false);
             }
 
             if (config.getSecureClientPortAddress() != null) {
+                //初始化secureCnxnFactory，默认是 NIOServerCnxnFactory
                 secureCnxnFactory = ServerCnxnFactory.createFactory();
                 secureCnxnFactory.configure(config.getSecureClientPortAddress(), config.getMaxClientCnxns(), config.getClientPortListenBacklog(), true);
             }
