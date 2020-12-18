@@ -447,7 +447,9 @@ public class ClientCnxn {
     }
 
     public void start() {
+        //启动发送线程
         sendThread.start();
+        //启动事件线程
         eventThread.start();
     }
 
@@ -1229,7 +1231,7 @@ public class ClientCnxn {
                         LOG.warn(warnInfo);
                         throw new SessionTimeoutException(warnInfo);
                     }
-                    if (state.isConnected()) {
+                    if (state.isConnected()) {  //发送心跳
                         //1000(1 second) is to prevent race condition missing to send the second ping
                         //also make sure not to send too many pings when readTimeout is small
                         int timeToNextPing = readTimeout / 2
@@ -1237,7 +1239,7 @@ public class ClientCnxn {
                                              - ((clientCnxnSocket.getIdleSend() > 1000) ? 1000 : 0);
                         //send a ping request either time is due or no packet sent out within MAX_SEND_PING_INTERVAL
                         if (timeToNextPing <= 0 || clientCnxnSocket.getIdleSend() > MAX_SEND_PING_INTERVAL) {
-                            sendPing();
+                            sendPing();     //将数据加入到outgoingQueue中
                             clientCnxnSocket.updateLastSend();
                         } else {
                             if (timeToNextPing < to) {
@@ -1258,7 +1260,7 @@ public class ClientCnxn {
                         }
                         to = Math.min(to, pingRwTimeout - idlePingRwServer);
                     }
-
+                    //处理请求
                     clientCnxnSocket.doTransport(to, pendingQueue, ClientCnxn.this);
                 } catch (Throwable e) {
                     if (closing) {

@@ -216,7 +216,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
 
         private void select() {
             try {
-                selector.select();
+                selector.select();  //阻塞等待链接
 
                 Iterator<SelectionKey> selectedKeys = selector.selectedKeys().iterator();
                 while (!stopped && selectedKeys.hasNext()) {
@@ -289,7 +289,7 @@ public class NIOServerCnxnFactory extends ServerCnxnFactory {
                 sc.configureBlocking(false);
 
                 // Round-robin assign this connection to a selector thread
-                if (!selectorIterator.hasNext()) {
+                if (!selectorIterator.hasNext()) {  //连接分配选择器
                     selectorIterator = selectorThreads.iterator();
                 }
                 SelectorThread selectorThread = selectorIterator.next();
