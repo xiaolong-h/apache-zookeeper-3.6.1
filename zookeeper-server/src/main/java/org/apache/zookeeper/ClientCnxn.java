@@ -735,6 +735,7 @@ public class ClientCnxn {
     protected void finishPacket(Packet p) {
         int err = p.replyHeader.getErr();
         if (p.watchRegistration != null) {
+            // 客户端注册watcher
             p.watchRegistration.register(err);
         }
         // Add all the removed watch events to the event queue, so that the

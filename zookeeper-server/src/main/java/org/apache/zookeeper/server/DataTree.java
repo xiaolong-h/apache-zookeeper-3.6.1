@@ -678,6 +678,8 @@ public class DataTree {
         nodeDataSize.addAndGet(getNodeSize(path, data) - getNodeSize(path, lastdata));
 
         updateWriteStat(path, dataBytes);
+
+        // 触发watcher
         dataWatches.triggerWatch(path, EventType.NodeDataChanged);
         return s;
     }
@@ -728,6 +730,7 @@ public class DataTree {
         Stat stat = new Stat();
         DataNode n = nodes.get(path);
         if (watcher != null) {
+            //注册watcher
             dataWatches.addWatch(path, watcher);
         }
         if (n == null) {
@@ -952,6 +955,7 @@ public class DataTree {
             case OpCode.setData:
                 SetDataTxn setDataTxn = (SetDataTxn) txn;
                 rc.path = setDataTxn.getPath();
+                // 修改
                 rc.stat = setData(
                     setDataTxn.getPath(),
                     setDataTxn.getData(),

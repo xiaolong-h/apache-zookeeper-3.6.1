@@ -136,6 +136,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements Req
         try {
             while (true) {
                 ServerMetrics.getMetrics().PREP_PROCESSOR_QUEUE_SIZE.add(submittedRequests.size());
+                //取出请求
                 Request request = submittedRequests.take();
                 ServerMetrics.getMetrics().PREP_PROCESSOR_QUEUE_TIME
                     .add(Time.currentElapsedTime() - request.prepQueueStartTime);
@@ -151,6 +152,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements Req
                 }
 
                 request.prepStartTime = Time.currentElapsedTime();
+                //开始处理
                 pRequest(request);
             }
         } catch (Exception e) {
@@ -897,6 +899,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements Req
             case OpCode.getEphemerals:
             case OpCode.multiRead:
             case OpCode.addWatch:
+                //检查是否为统一session
                 zks.sessionTracker.checkSession(request.sessionId, request.getOwner());
                 break;
             default:
@@ -941,6 +944,7 @@ public class PrepRequestProcessor extends ZooKeeperCriticalThread implements Req
         }
         request.zxid = zks.getZxid();
         ServerMetrics.getMetrics().PREP_PROCESS_TIME.add(Time.currentElapsedTime() - request.prepStartTime);
+        //走到下一层
         nextProcessor.processRequest(request);
     }
 

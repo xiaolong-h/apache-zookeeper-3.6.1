@@ -74,6 +74,7 @@ public class WatchManager implements IWatchManager {
             return false;
         }
 
+        // 传过来的watcher 是 serverCnxn
         Set<Watcher> list = watchTable.get(path);
         if (list == null) {
             // don't waste memory if there are few watches on a node
@@ -165,6 +166,7 @@ public class WatchManager implements IWatchManager {
             if (supress != null && supress.contains(w)) {
                 continue;
             }
+            // 此时的 watcher 是 serverCnxn
             w.process(e);
         }
 
